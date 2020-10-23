@@ -3,7 +3,6 @@
 # Author: Terje Sannum <terje@offpiste.org>
 
 use strict;
-use File::Basename;
 use LWP::UserAgent;
 use HTTP::Cookies;
 use URI;
