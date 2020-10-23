@@ -24,6 +24,7 @@ die "Usage: $0 --user <user> --password <password> [--verbose] [--format <raw|ta
 
 my $cookies = HTTP::Cookies->new();
 my $ua = LWP::UserAgent->new;
+$ua->ssl_opts(SSL_cipher_list => 'DEFAULT:!DH');
 $ua->cookie_jar($cookies);
 push @{$ua->requests_redirectable}, 'POST';
 
