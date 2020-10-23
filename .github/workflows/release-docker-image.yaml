@@ -1,0 +1,29 @@
+name: Release docker image
+
+on:
+  push:
+    tags:
+      - '*'
+
+defaults:
+  run:
+    working-directory: docker
+
+jobs:
+  release:
+    env:
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      IMAGE_NAME: altibox-devices
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v1
+    - name: Build Docker image
+      run: |
+        docker build -t docker.pkg.github.com/${GITHUB_REPOSITORY}/${IMAGE_NAME}:${GITHUB_REF##*/} .
+    - name: Login GPR
+      run: |
+        docker login -u ${GITHUB_REPOSITORY} -p ${GITHUB_TOKEN} docker.pkg.github.com
+    - name: Push Docker image
+      run: |
+        docker push docker.pkg.github.com/${GITHUB_REPOSITORY}/${IMAGE_NAME}:${GITHUB_REF##*/}
