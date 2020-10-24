@@ -10,15 +10,19 @@ use JSON;
 use Getopt::Long;
 use Text::Table;
 
-my($user, $password, $verbose);
-my $format = 'table';
-my $output = '-';
+my($user, $password, $verbose, $format, $output);
 my $ok = GetOptions("user=s"     => \$user,
                     "password=s" => \$password,
                     "output=s"   => \$output,
                     "format=s"   => \$format,
                     "verbose"    => \$verbose
     );
+$user = $ENV{'ALTIBOX_USER'} unless(defined($user));
+$password = $ENV{'ALTIBOX_PASSWORD'} unless(defined($password));
+$format = ($ENV{'ALTIBOX_FORMAT'} || 'table') unless(defined($format));
+$output = ($ENV{'ALTIBOX_OUTPUT'} || '-') unless(defined($output));
+$verbose = $ENV{'ALTIBOX_VERBOSE'} unless(defined($verbose));
+
 $ok = ($ok && $format =~ /^(raw|table)$/ && defined($user) && defined($password));
 die "Usage: $0 --user <user> --password <password> [--verbose] [--format <raw|table>] [--output <file>]\n" unless($ok);
 
