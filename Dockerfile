@@ -1,9 +1,14 @@
-FROM perl:5.32.0
+FROM perl:5.32-slim
 
-RUN cpan -i LWP::UserAgent \
-        && cpan -i LWP::Protocol::https \
-        && cpan -i JSON \
-        && cpan -i Text::Table
+RUN apt-get update \
+        && apt-get install -y --no-install-recommends openssl gcc libc6-dev libssl-dev libz-dev \
+        && cpanm LWP::Protocol::https \
+        && cpanm LWP::UserAgent \
+        && cpanm JSON \
+        && cpanm Text::Table \
+        && apt-get purge -y --auto-remove gcc libc6-dev libssl-dev libz-dev \
+        && apt-get clean \
+        && rm -rf /var/lib/apt/lists/*
 
 ENV ALTIBOX_USER ""
 ENV ALTIBOX_PASSWORD ""
