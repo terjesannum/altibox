@@ -23,7 +23,7 @@ $format = ($ENV{'ALTIBOX_FORMAT'} || 'table') unless(defined($format));
 $output = ($ENV{'ALTIBOX_OUTPUT'} || '-') unless(defined($output));
 $verbose = $ENV{'ALTIBOX_VERBOSE'} unless(defined($verbose));
 
-$ok = ($ok && $format =~ /^(raw|table)$/ && defined($user) && defined($password));
+$ok = ($ok && $format =~ /^(raw|table)$/ && $user ne "" &&  $password ne "");
 die "Usage: $0 --user <user> --password <password> [--verbose] [--format <raw|table>] [--output <file>]\n" unless($ok);
 
 my $cookies = HTTP::Cookies->new();
