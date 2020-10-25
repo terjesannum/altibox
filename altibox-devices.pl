@@ -142,8 +142,8 @@ if($format eq 'raw') {
                            $timestamp)
               ) } @{$json->{'networkClients'}};
 } else {
-    my $table = Text::Table->new('Name','IP','MAC','Connection','RSSI');
-    $table->load(map { [ $_->{'hostname'}, $_->{'ipAddress'}, $_->{'macAddress'}, $_->{'connectionType'}, $_->{'wifiRssi'} ] } @{$json->{'networkClients'}});
+    my $table = Text::Table->new('Name','MAC','IP','Connection','RSSI');
+    $table->load(map { [ $_->{'hostname'}, $_->{'macAddress'}, $_->{'ipAddress'}, $_->{'connectionType'}, $_->{'wifiRssi'} ] } @{$json->{'networkClients'}});
     print $table;
 }
 verbose("Output written to %s\n", $output) unless($output eq '-');
