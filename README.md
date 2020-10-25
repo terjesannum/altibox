@@ -3,7 +3,7 @@
 List devices connected to your Altibox router
 
 ```
-Usage: ./altibox-devices.pl --user <user> --password <password> [--verbose] [--format <raw|table>] [--output <file>]
+Usage: ./altibox-devices.pl --user <user> --password <password> [--verbose] [--format <raw|influxdb|table>] [--output <file>]
 ```
 
 ```

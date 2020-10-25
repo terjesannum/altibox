@@ -2,9 +2,10 @@ FROM perl:5.32-slim
 
 RUN apt-get update \
         && apt-get install -y --no-install-recommends openssl gcc libc6-dev libssl-dev libz-dev \
+        && cpanm InfluxDB::LineProtocol \
+        && cpanm JSON \
         && cpanm LWP::Protocol::https \
         && cpanm LWP::UserAgent \
-        && cpanm JSON \
         && cpanm Text::Table \
         && apt-get purge -y --auto-remove gcc libc6-dev libssl-dev libz-dev \
         && apt-get clean \

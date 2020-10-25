@@ -3,12 +3,14 @@
 # Author: Terje Sannum <terje@offpiste.org>
 
 use strict;
-use LWP::UserAgent;
-use HTTP::Cookies;
-use URI;
-use JSON;
 use Getopt::Long;
+use HTTP::Cookies;
+use InfluxDB::LineProtocol qw(data2line);
+use JSON;
+use LWP::UserAgent;
 use Text::Table;
+use Time::HiRes qw(gettimeofday);
+use URI;
 
 my($user, $password, $verbose, $format, $output);
 my $ok = GetOptions("user=s"     => \$user,
@@ -23,8 +25,8 @@ $format = ($ENV{'ALTIBOX_FORMAT'} || 'table') unless(defined($format));
 $output = ($ENV{'ALTIBOX_OUTPUT'} || '-') unless(defined($output));
 $verbose = $ENV{'ALTIBOX_VERBOSE'} unless(defined($verbose));
 
-$ok = ($ok && $format =~ /^(raw|table)$/ && $user ne "" &&  $password ne "");
-die "Usage: $0 --user <user> --password <password> [--verbose] [--format <raw|table>] [--output <file>]\n" unless($ok);
+$ok = ($ok && $format =~ /^(raw|influxdb|table)$/ && $user ne "" &&  $password ne "");
+die "Usage: $0 --user <user> --password <password> [--verbose] [--format <raw|influxdb|table>] [--output <file>]\n" unless($ok);
 
 my $cookies = HTTP::Cookies->new();
 my $ua = LWP::UserAgent->new;
@@ -131,6 +133,14 @@ if($output ne '-') {
 
 if($format eq 'raw') {
     print $res->content;
+} elsif($format eq 'influxdb') {
+    my $timestamp = sprintf("%s%06d000", gettimeofday());
+    map { printf("%s\n",
+                 data2line('altibox.device',
+                           {ip => $_->{'ipAddress'}, connection => $_->{'connectionType'}, rssi => $_->{'wifiRssi'}},
+                           {name => $_->{'hostname'}, mac => $_->{'macAddress'}},
+                           $timestamp)
+              ) } @{$json->{'networkClients'}};
 } else {
     my $table = Text::Table->new('Name','IP','MAC','Connection','RSSI');
     $table->load(map { [ $_->{'hostname'}, $_->{'ipAddress'}, $_->{'macAddress'}, $_->{'connectionType'}, $_->{'wifiRssi'} ] } @{$json->{'networkClients'}});
