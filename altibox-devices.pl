@@ -1,6 +1,7 @@
 #!/usr/bin/env perl
 # List devices connected to your Altibox router
 # Author: Terje Sannum <terje@offpiste.org>
+# URL: https://github.com/terjesannum/altibox-devices
 
 use strict;
 use Getopt::Long;
