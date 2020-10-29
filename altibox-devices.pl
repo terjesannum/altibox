@@ -118,7 +118,7 @@ die "Couldn't find site id\n" unless($site_id =~ /^\d+$/);
 verbose("site_id: %s\n", $site_id);
 
 verbose("========== Query api\n");
-%query_params = ( activeOnly => 'true',
+%query_params = ( activeOnly => 'false',
                   siteid => $site_id,
                   _ => sprintf("%s000", time())
     );
