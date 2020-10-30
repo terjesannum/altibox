@@ -1,5 +1,8 @@
 FROM perl:5.32-slim
 
+LABEL org.opencontainers.image.authors="Terje Sannum <terje@offpiste.org>" \
+      org.opencontainers.image.source="https://github.com/terjesannum/altibox-devices"
+
 RUN apt-get update \
         && apt-get install -y --no-install-recommends openssl gcc libc6-dev libssl-dev libz-dev \
         && cpanm InfluxDB::LineProtocol \
