@@ -3,7 +3,7 @@
 List devices connected to your Altibox router
 
 ```
-Usage: ./altibox-devices.pl --user <user> --password <password> [--verbose] [--format <raw|influxdb|table>] [--output <file>]
+Usage: ./altibox-devices.pl --user <user> --password <password> [--verbose] [--format <raw|influxdb|table>] [--output <file>]  [--loop <seconds>]
 ```
 
 ```
@@ -15,4 +15,4 @@ raspberrypi dc:a6:32:1c:7b:9f 192.168.10.182 WIFI5GHZ   62
 Apple-TV    90:dd:5d:cb:f2:3b 192.168.10.139 WIRED       0
 ```
 
-Environment variables can also be used for options: `ALTIBOX_USER`, `ALTIBOX_PASSWORD`, `ALTIBOX_FORMAT`, `ALTIBOX_OUTPUT`, `ALTIBOX_VERBOSE`.
+Environment variables can also be used for options: `ALTIBOX_USER`, `ALTIBOX_PASSWORD`, `ALTIBOX_FORMAT`, `ALTIBOX_OUTPUT`, `ALTIBOX_LOOP`, `ALTIBOX_VERBOSE`.
