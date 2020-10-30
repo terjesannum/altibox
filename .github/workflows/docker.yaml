@@ -1,0 +1,33 @@
+name: Build and push docker image
+
+on:
+  push:
+    tags:
+      - '[0-9]+'
+
+jobs:
+  docker:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v2
+    - name: Set up QEMU
+      uses: docker/setup-qemu-action@v1
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v1
+    - name: Login GHCR
+      uses: docker/login-action@v1
+      with:
+        registry: https://ghcr.io
+        username: ${{ github.repository_owner }}
+        password: ${{ secrets.GHCR_PAT }}
+    - name: Get docker image version
+      id: get_version
+      run: echo ::set-output name=version::${GITHUB_REF#refs/tags/}
+    - name: Build and push
+      id: docker_build
+      uses: docker/build-push-action@v2
+      with:
+        platforms: linux/amd64,linux/arm/v7
+        push: true
+        tags: ghcr.io/${{ github.repository_owner }}/altibox-devices:${{ steps.get_version.outputs.version }}
