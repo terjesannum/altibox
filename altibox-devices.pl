@@ -138,7 +138,7 @@ if($format eq 'raw') {
     my $timestamp = sprintf("%s%06d000", gettimeofday());
     map { printf("%s\n",
                  data2line('altibox.device',
-                           {ip => $_->{'ipAddress'}, connection => $_->{'connectionType'}, rssi => $_->{'wifiRssi'}},
+                           {ip => $_->{'ipAddress'}, connection => $_->{'connectionType'}, rssi => $_->{'wifiRssi'}, online => $_->{'connectionType'} eq 'DISCONNECTED' ? 0 : 1},
                            {name => $_->{'hostname'}, mac => $_->{'macAddress'}},
                            $timestamp)
               ) } @{$json->{'networkClients'}};
