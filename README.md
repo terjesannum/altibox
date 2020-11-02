@@ -1,13 +1,13 @@
-# altibox-devices
+# altibox
 
 List devices connected to your Altibox router
 
 ```
-Usage: ./altibox-devices.pl --user <user> --password <password> [--verbose] [--format <raw|influxdb|table>] [--output <file>]  [--loop <seconds>]
+Usage: ./altibox.pl --user <user> --password <password> [--verbose] [--format <raw|influxdb|table>] [--output <file>]  [--loop <seconds>]
 ```
 
 ```
-$ ./altibox-devices.pl --user foo@bar.zot --password xxxyyyzzz
+$ ./altibox.pl --user foo@bar.zot --password xxxyyyzzz
 Name        MAC               IP             Connection RSSI
 rockrobo    34:ce:00:e9:a2:73 192.168.10.191 WIFI24GHZ  65
 Laptop      f0:4d:a2:c1:11:00 192.168.10.187 WIFI5GHZ   45

@@ -1,7 +1,7 @@
 FROM perl:5.32-slim
 
 LABEL org.opencontainers.image.authors="Terje Sannum <terje@offpiste.org>" \
-      org.opencontainers.image.source="https://github.com/terjesannum/altibox-devices"
+      org.opencontainers.image.source="https://github.com/terjesannum/altibox"
 
 RUN apt-get update \
         && apt-get install -y --no-install-recommends openssl gcc libc6-dev libssl-dev libz-dev \
@@ -20,6 +20,6 @@ ENV ALTIBOX_FORMAT ""
 ENV ALTIBOX_OUTPUT ""
 ENV ALTIBOX_VERBOSE 0
 
-COPY altibox-devices.pl /
+COPY altibox.pl /
 
-ENTRYPOINT [ "/altibox-devices.pl" ]
+ENTRYPOINT [ "/altibox.pl" ]

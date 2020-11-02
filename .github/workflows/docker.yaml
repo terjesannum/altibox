@@ -30,4 +30,4 @@ jobs:
       with:
         platforms: linux/amd64,linux/arm/v7
         push: true
-        tags: ghcr.io/${{ github.repository_owner }}/altibox-devices:${{ steps.get_version.outputs.version }}
+        tags: ghcr.io/${{ github.repository_owner }}/altibox:${{ steps.get_version.outputs.version }}
