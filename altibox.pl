@@ -140,6 +140,10 @@ while(1) {
             last;
         }
         $json = decode_json($res->content);
+        if($json->{'status'} eq 'notAuthenticated') {
+            printf STDERR ("Query API failed: Not authenticated\n");
+            last;
+        }
 
         my($f) = \*STDOUT;
         if($output ne '-') {
