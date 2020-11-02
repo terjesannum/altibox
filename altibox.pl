@@ -141,7 +141,7 @@ while(1) {
         }
         $json = decode_json($res->content);
         if($json->{'status'} eq 'notAuthenticated') {
-            printf STDERR ("Query API failed: Not authenticated\n");
+            print STDERR "Query API failed: Not authenticated\n";
             last;
         }
 
