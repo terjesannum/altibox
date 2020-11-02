@@ -37,3 +37,7 @@ Apple-TV    90:dd:5d:cb:f2:3b 192.168.10.139 WIRED       0
 ```
 
 Environment variables can be used for all options: `ALTIBOX_COMMAND`, `ALTIBOX_USER`, `ALTIBOX_PASSWORD`, `ALTIBOX_FORMAT`, `ALTIBOX_OUTPUT`, `ALTIBOX_LOOP`, `ALTIBOX_VERBOSE`.
+
+## Docker
+
+A docker image is available [here](https://github.com/users/terjesannum/packages/container/package/altibox).
