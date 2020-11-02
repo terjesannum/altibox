@@ -1,6 +1,7 @@
 # altibox
 
-List devices connected to your Altibox router
+Command line interface to your Altibox router.  
+(Work in progress, currently only support listing connected devices)
 
 ```
 Usage: ./altibox.pl --user <user> --password <password> [--verbose] [--format <raw|influxdb|table>] [--output <file>]  [--loop <seconds>]
