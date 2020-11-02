@@ -15,14 +15,17 @@ use URI;
 
 $|=1;
 
-my($user, $password, $verbose, $format, $output, $loop);
-my $ok = GetOptions("user=s"     => \$user,
-                    "password=s" => \$password,
-                    "output=s"   => \$output,
-                    "format=s"   => \$format,
-                    "loop=i"     => \$loop,
-                    "verbose"    => \$verbose
+my($command, $user, $password, $verbose, $format, $output, $loop);
+my $ok = GetOptions("command=s" => \$command,
+                    "user=s"      => \$user,
+                    "password=s"  => \$password,
+                    "output=s"    => \$output,
+                    "format=s"    => \$format,
+                    "loop=i"      => \$loop,
+                    "verbose"     => \$verbose
     );
+
+$command = $ENV{'ALTIBOX_COMMAND'} unless(defined($command));
 $user = $ENV{'ALTIBOX_USER'} unless(defined($user));
 $password = $ENV{'ALTIBOX_PASSWORD'} unless(defined($password));
 $format = ($ENV{'ALTIBOX_FORMAT'} || 'table') unless(defined($format));
@@ -30,8 +33,8 @@ $output = ($ENV{'ALTIBOX_OUTPUT'} || '-') unless(defined($output));
 $loop = $ENV{'ALTIBOX_LOOP'} unless(defined($loop));
 $verbose = $ENV{'ALTIBOX_VERBOSE'} unless(defined($verbose));
 
-$ok = ($ok && $format =~ /^(raw|influxdb|table)$/ && $user ne "" &&  $password ne "");
-die "Usage: $0 --user <user> --password <password> [--verbose] [--format <raw|influxdb|table>] [--output <file>] [--loop <seconds>]\n" unless($ok);
+$ok = ($ok && $command =~ /^(devices)$/ && $format =~ /^(raw|influxdb|table)$/ && $user ne "" &&  $password ne "");
+die "Usage: $0 --command devices --user <user> --password <password> [--verbose] [--format <raw|influxdb|table>] [--output <file>] [--loop <seconds>]\n" unless($ok);
 
 while(1) {
 
