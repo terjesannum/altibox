@@ -15,26 +15,41 @@ use URI;
 
 $|=1;
 
+my($usage) =
+    "Usage: $0 --command <devices|port-forwards> --user <user> --password <password> [command options] [--verbose]\n" .
+    "  devices options: [--format <raw|influxdb|text>] [--output <file>] [--loop <seconds>]\n" .
+    "  port-forwards options: [--format <raw|influxdb|text>] [--output <file>] [--loop <seconds>]\n";
+
 my($command, $user, $password, $verbose, $format, $output, $loop);
 my $ok = GetOptions("command=s" => \$command,
                     "user=s"      => \$user,
                     "password=s"  => \$password,
+                    "verbose"     => \$verbose,
                     "output=s"    => \$output,
                     "format=s"    => \$format,
-                    "loop=i"      => \$loop,
-                    "verbose"     => \$verbose
+                    "loop=i"      => \$loop
     );
-
 $command = $ENV{'ALTIBOX_COMMAND'} unless(defined($command));
 $user = $ENV{'ALTIBOX_USER'} unless(defined($user));
 $password = $ENV{'ALTIBOX_PASSWORD'} unless(defined($password));
-$format = ($ENV{'ALTIBOX_FORMAT'} || 'table') unless(defined($format));
+$verbose = $ENV{'ALTIBOX_VERBOSE'} unless(defined($verbose));
+$ok = ($ok && $command =~ /^(devices|port-forwards)$/ && $user ne "" &&  $password ne "");
+die $usage unless($ok);
+
+my($api_url, %api_query_params, $api_output_handler);
+if($command eq 'devices') {
+    $api_url = 'https://www.altibox.no/api/wifi/getlandevices';
+    %api_query_params = ( activeOnly => 'false' );
+    $api_output_handler = \&output_devices;
+} elsif($command eq 'port-forwards') {
+    $api_url = 'https://www.altibox.no/api/wifi/getwifibylocation';
+    $api_output_handler = \&output_portfwd;
+}
+$format = ($ENV{'ALTIBOX_FORMAT'} || 'text') unless(defined($format));
 $output = ($ENV{'ALTIBOX_OUTPUT'} || '-') unless(defined($output));
 $loop = $ENV{'ALTIBOX_LOOP'} unless(defined($loop));
-$verbose = $ENV{'ALTIBOX_VERBOSE'} unless(defined($verbose));
-
-$ok = ($ok && $command =~ /^(devices)$/ && $format =~ /^(raw|influxdb|table)$/ && $user ne "" &&  $password ne "");
-die "Usage: $0 --command devices --user <user> --password <password> [--verbose] [--format <raw|influxdb|table>] [--output <file>] [--loop <seconds>]\n" unless($ok);
+$ok = ($ok && $format =~ /^(raw|influxdb|text)$/);
+die $usage unless($ok);
 
 while(1) {
 
@@ -128,11 +143,10 @@ while(1) {
 
     while(1) {
         verbose("========== Query api\n");
-        %query_params = ( activeOnly => 'false',
-                          siteid => $site_id,
-                          _ => sprintf("%s000", time())
-            );
-        $uri = URI->new('https://www.altibox.no/api/wifi/getlandevices');
+        %query_params = (( siteid => $site_id,
+                           _ => sprintf("%s000", time())),
+                         %api_query_params);
+        $uri = URI->new($api_url);
         $uri->query_form(%query_params);
         $res = $ua->get($uri);
         unless($res->is_success) {
@@ -145,27 +159,18 @@ while(1) {
             last;
         }
 
-        my($f) = \*STDOUT;
         if($output ne '-') {
-            open($f, ">$output") || die "Can't open $output: $!\n";
+            open(F, ">", "$output") || die "Can't open $output: $!\n";
+            select(F);
         }
         if($format eq 'raw') {
-            print $f $res->content;
-        } elsif($format eq 'influxdb') {
-            my $timestamp = sprintf("%s%06d000", gettimeofday());
-            map { printf $f ("%s\n",
-                         data2line('altibox.device',
-                                   {ip => $_->{'ipAddress'}, connection => $_->{'connectionType'}, rssi => $_->{'wifiRssi'}, online => $_->{'connectionType'} eq 'DISCONNECTED' ? 0 : 1},
-                                   {name => $_->{'hostname'}, mac => $_->{'macAddress'}},
-                                   $timestamp)
-                      ) } @{$json->{'networkClients'}};
+            print $res->content;
         } else {
-            my $table = Text::Table->new('Name','MAC','IP','Connection','RSSI');
-            $table->load(map { [ $_->{'hostname'}, $_->{'macAddress'}, $_->{'ipAddress'}, $_->{'connectionType'}, $_->{'wifiRssi'} ] } @{$json->{'networkClients'}});
-            print $f $table;
+            print $api_output_handler->($json, $site_id);
         }
+        close(F) if($output ne '-');
+        select(STDOUT);
         verbose("Output written to %s\n", $output) unless($output eq '-');
-        close($f) if($output ne '-');
 
         (defined($loop) && $loop > 0) ? sleep($loop) : last;
     } # Query api loop end
@@ -175,4 +180,49 @@ while(1) {
 
 sub verbose {
     printf STDERR @_ if($verbose);
+}
+
+sub output_devices(@) {
+    my($json, $site_id) = @_;
+    if($format eq 'influxdb') {
+        my $timestamp = sprintf("%s%06d000", gettimeofday());
+        return join("\n", map { data2line('altibox.device',
+                                          {ip => $_->{'ipAddress'}, connection => $_->{'connectionType'}, rssi => $_->{'wifiRssi'}, online => $_->{'connectionType'} eq 'DISCONNECTED' ? 0 : 1},
+                                          {name => $_->{'hostname'}, mac => $_->{'macAddress'}},
+                                          $timestamp) } @{$json->{'networkClients'}}) . "\n";
+    } else {
+        my $table = Text::Table->new('Name','MAC','IP','Connection','RSSI');
+        $table->load(map { [ $_->{'hostname'}, $_->{'macAddress'}, $_->{'ipAddress'}, $_->{'connectionType'}, $_->{'wifiRssi'} ] } @{$json->{'networkClients'}});
+        return $table;
+    }
+}
+
+sub output_portfwd(@) {
+    my($json, $site_id) = @_;
+    my $router_net = sprintf("%d.%d.%d",
+                             $json->{'data'}->{"$site_id"}->{'router'}->{'ip_part_0'},
+                             $json->{'data'}->{"$site_id"}->{'router'}->{'ip_part_1'},
+                             $json->{'data'}->{"$site_id"}->{'router'}->{'ip_part_2'});
+    my $routes = $json->{'data'}->{"$site_id"}->{'router'}->{'routes'};
+    if($format eq 'influxdb') {
+        my $timestamp = sprintf("%s%06d000", gettimeofday());
+        return join("\n", map { data2line('altibox.port-forward',
+                                          { active => 1,
+                                            ext_from => $routes->{$_}->{'ext_from'}, ext_to => $routes->{$_}->{'ext_to'},
+                                            int_from => $routes->{$_}->{'int_from'}, int_to => $routes->{$_}->{'int_to'},
+                                            int_ip    => sprintf("%s.%d", $router_net, $routes->{$_}->{'int_ip'})
+                                          },
+                                          { name      => $routes->{$_}->{'name'},
+                                          })
+                    } keys($routes)) . "\n";
+    } else {
+        my $table = Text::Table->new('Name','Type', 'Ext ports','Int ports','Int IP');
+        $table->load(map { [ $routes->{$_}->{'name'},
+                             $routes->{$_}->{'type'},
+                             sprintf("%d:%d", $routes->{$_}->{'ext_from'}, $routes->{$_}->{'ext_to'}),
+                             sprintf("%d:%d", $routes->{$_}->{'int_from'}, $routes->{$_}->{'int_to'}),
+                             sprintf("%s.%d", $router_net, $routes->{$_}->{'int_ip'})
+            ] } keys($routes));
+        return $table;
+    }
 }
