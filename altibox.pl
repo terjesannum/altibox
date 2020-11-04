@@ -214,7 +214,7 @@ sub output_portfwd(@) {
                                           },
                                           { name      => $routes->{$_}->{'name'},
                                           })
-                    } keys($routes)) . "\n";
+                    } keys(%{$routes})) . "\n";
     } else {
         my $table = Text::Table->new('Name','Type', 'Ext ports','Int ports','Int IP');
         $table->load(map { [ $routes->{$_}->{'name'},
@@ -222,7 +222,7 @@ sub output_portfwd(@) {
                              sprintf("%d:%d", $routes->{$_}->{'ext_from'}, $routes->{$_}->{'ext_to'}),
                              sprintf("%d:%d", $routes->{$_}->{'int_from'}, $routes->{$_}->{'int_to'}),
                              sprintf("%s.%d", $router_net, $routes->{$_}->{'int_ip'})
-            ] } keys($routes));
+            ] } keys(%{$routes}));
         return $table;
     }
 }
